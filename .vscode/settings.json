@@ -1,0 +1,6 @@
+{
+    "latex-workshop.latex.outDir": "%DIR%/out",
+    "latex-workshop.latex.autoBuild.run": "onSave",
+    "editor.formatOnSave": true,
+    "latex-workshop.linting.run": "onType",
+}
