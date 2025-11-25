@@ -1,0 +1,49 @@
+\subsubsection*{Bereitstellen der CRL über Nginx}
+
+\paragraph*{Ablage der CRL auf dem Webserver}
+Auf der Ubuntu-VM den vorgesehenen Ordner unter \texttt{/var/www/html/} anlegen (falls nicht vorhanden):
+
+\begin{verbatim}
+sudo mkdir -p /var/www/html/crl
+\end{verbatim}
+
+Die zuvor exportierte Datei \texttt{cacrl.pem} nach diesem Verzeichnis kopieren:
+
+\begin{verbatim}
+sudo cp /pfad/zur/cacrl.pem /var/www/html/crl/
+\end{verbatim}
+
+\begin{figure}[h!]
+    \centering
+    \caption*{Dateistruktur auf der VM}
+\end{figure}
+
+\paragraph*{Nginx neu starten}
+Nach dem Platzieren der Datei muss Nginx neu geladen werden, damit die CRL korrekt ausgeliefert wird:
+
+\begin{verbatim}
+sudo systemctl restart nginx
+\end{verbatim}
+
+\begin{figure}[h!]
+    \centering
+    \caption*{Bestätigung des Neustarts}
+\end{figure}
+
+\subsubsection*{Überprüfung im Browser}
+
+\begin{itemize}
+    \item Zugriff auf den Webdienst mit dem betroffenen Serverzertifikat herstellen.
+    \item Im Browser das Zertifikat inspizieren (Zertifikatsdetails öffnen).
+    \item Unter \texttt{CRL Distribution Points} sollte nun der gesetzte Link erscheinen:
+\end{itemize}
+
+\begin{verbatim}
+http://192.168.1.1/crl/cacrl.pem
+\end{verbatim}
+
+Test: Der Link lässt sich im Browser öffnen – die CRL kann theoretisch heruntergeladen werden.
+
+\subsubsection*{Ergebnis}
+
+Durch die korrekte Konfiguration des CRL Distribution Points, das Widerrufen des Serverzertifikats und das Erstellen sowie Bereitstellen der CRL über Nginx kann der Browser die CRL erfolgreich finden und anzeigen. Damit ist der Widerrufsmechanismus funktional implementiert.

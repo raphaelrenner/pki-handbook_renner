@@ -1,0 +1,251 @@
+
+
+Für diesen OCSP-Responder wird ein Modell der öffentlich verfügbaren Software \textbf{XiPKI} verwendet, zu finden unter:
+\url{https://github.com/xipki/xipki}
+
+\subsubsection*{Download von XiPKI}
+
+Unter den Releases kann das Setup für die zum Zeitpunkt dieser Anleitung aktuellste Version (6.5.3) heruntergeladen werden.
+Hinweis: Für Tomcat wird mindestens Java 11 benötigt.
+
+\url{https://github.com/xipki/xipki/releases/tag/v6.5.3}
+
+Das Archiv enthält eine Datei \texttt{restore.sh}, die mit einem Zielverzeichnis ausgeführt werden muss. In diesem Zielverzeichnis landen anschließend alle Module von XiPKI.
+
+\begin{verbatim}
+chmod +x restore.sh
+./restore.sh ../xipki/
+\end{verbatim}
+
+Nach dem Wechsel in dieses Zielverzeichnis ergibt sich folgende Ordnerstruktur:
+
+\begin{verbatim}
+-rw-rw-r-- 1 buchi buchi  24K Jan  1 2024 CHANGELOG.md
+-rw-rw-r-- 1 buchi buchi 6.8K Jan  1 2024 INSTALL.md
+drwxrwxr-x 2 buchi buchi 4.0K Nov 18 22:31 license
+-rwxr-xr-x 1 buchi buchi 3.1K Jan  1 2024 prepare.sh
+-rw-rw-r-- 1 buchi buchi 7.5K Jan  1 2024 README.md
+drwxrwxr-x 3 buchi buchi 4.0K Nov 18 22:31 setup
+drwxrwxr-x 5 buchi buchi 4.0K Nov 18 22:31 xipki-ca
+drwxrwxr-x 9 buchi buchi 4.0K Nov 18 22:31 xipki-cli
+drwxrwxr-x 5 buchi buchi 4.0K Nov 18 22:31 xipki-gateway
+drwxrwxr-x 5 buchi buchi 4.0K Nov 18 22:31 xipki-hsmproxy
+drwxrwxr-x 9 buchi buchi 4.0K Nov 18 22:31 xipki-mgmt-cli
+drwxrwxr-x 5 buchi buchi 4.0K Nov 18 22:31 xipki-ocsp
+\end{verbatim}
+
+Für die Installation wird der Ordner \texttt{xipki-ocsp} benötigt.
+
+\subsubsection*{Installation des OCSP-Responders}
+
+\subsubsection*{Installation von Tomcat}
+
+Eine Installationsanleitung findet sich hier:
+\url{https://www.digitalocean.com/community/tutorials/how-to-install-apache-tomcat-10-on-ubuntu-20-04}
+
+Für den OCSP-Server wird Tomcat 10 als Webserver benötigt. Es wird empfohlen, Tomcat unter einem eigenen Benutzer auszuführen:
+
+\begin{verbatim}
+sudo useradd -m -d /opt/tomcat -U -s /bin/false tomcat
+\end{verbatim}
+
+Anschließend wird die neueste Tomcat-Version heruntergeladen und nach \texttt{/opt/tomcat} verschoben:
+
+\begin{verbatim}
+wget https://dlcdn.apache.org/tomcat/tomcat-10/v10.1.49/bin/apache-tomcat-10.1.49.tar.gz
+tar -xvzf apache-tomcat-10.1.49.tar.gz
+
+sudo mkdir -p /opt/tomcat
+sudo mv apache-tomcat-10.1.49 /opt/tomcat
+\end{verbatim}
+
+Nun müssen alle Shell-Skripte ausführbar gemacht werden:
+
+\begin{verbatim}
+sudo chown -R tomcat:tomcat /opt/tomcat/
+sudo chmod -R u+x /opt/tomcat/bin
+\end{verbatim}
+
+\subsubsection*{Konfiguration und Installation des OCSP-Moduls}
+
+Im Ordner \texttt{xipki/xipki-ocsp/} befindet sich ein Unterordner \texttt{tomcat}, welcher die benötigte OCSP-Konfiguration, Zertifikate und CRLs enthält.
+
+Im Verzeichnis \texttt{./tomcat/xipki} befindet sich bereits ein Ordner für CRLs. Zusätzlich muss ein Ordner für die später benötigten Signer-Zertifikate erstellt werden:
+
+\begin{verbatim}
+mkdir keycerts
+\end{verbatim}
+
+Die zentrale Konfigurationsdatei befindet sich unter
+\texttt{./tomcat/xipki/etc/ocsp/ocsp-responder.json}.
+Eine funktionierende Beispielkonfiguration:
+
+\begin{verbatim}
+{
+    "master": true,
+    "unknownIssuerBehaviour": "malformedRequest",
+
+    "datasources": [
+        {
+            "name": "datasource1",
+            "conf": {
+                "file": "etc/ocsp/database/ocsp-crl-db.properties"
+            }
+        }
+    ],
+
+    "requestOptions": [
+        {
+            "name": "request1",
+            "hashAlgorithms": ["SHA256"],
+            "maxRequestListCount": 10,
+            "maxRequestSize": 4096,
+            "nonce": { "occurrence": "optional" },
+            "supportsHttpGet": true,
+            "validateSignature": false,
+            "versions": ["v1"]
+        }
+    ],
+
+    "responders": [
+        {
+            "name": "responder1",
+            "mode": "RFC2560",
+            "request": "request1",
+            "response": "response1",
+            "servletPaths": ["/"],
+            "signer": "signer1",
+            "stores": ["store1"]
+        }
+    ],
+
+    "responseOptions": [
+        {
+            "name": "response1",
+            "embedCertsMode": "SIGNER",
+            "includeRevReason": true
+        }
+    ],
+
+    "signers": [
+        {
+            "name": "signer1",
+            "algorithms": ["SHA256withRSA"],
+            "type": "pkcs12",
+            "cert": { "file": "keycerts/ocsp.crt" },
+            "caCerts": [
+                { "file": "keycerts/intermediate-ca.crt" }
+            ],
+            "key": "password=htl,keystore=file:keycerts/ocsp.pfx"
+        }
+    ],
+
+    "stores": [
+        {
+            "name": "store1",
+            "ignoreExpiredCert": true,
+            "ignoreNotYetValidCert": true,
+            "includeArchiveCutoff": false,
+            "includeCrlId": false,
+            "retentionInterval": -1,
+            "minNextUpdatePeriod": "1d",
+            "unknownCertBehaviour": "good",
+            "updateInterval": "10m",
+            "source": {
+                "datasource": "datasource1",
+                "type": "crl",
+                "conf": { "dir": "crls" }
+            }
+        }
+    ]
+}
+\end{verbatim}
+
+Die MySQL-Datenbankkonfiguration befindet sich in
+\texttt{./tomcat/xipki/etc/ocsp/database/ocsp-crl-db.properties}.
+
+\subsubsection*{Zertifikate}
+
+Für den OCSP-Signer muss ein eigenes Zertifikat erstellt werden.
+Es muss die Extended Key Usage \texttt{OCSP Signing} enthalten.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{zertrespond}
+    \caption{All Certificates in Certificate-Database}
+    \label{fig:zertrespond}
+\end{figure}
+
+Das Signer-Zertifikat wird im PKCS\#12-Format (\texttt{ocsp.pfx}) exportiert.
+Signer-Zertifikat und Intermediate-CA müssen im PEM-Format in den Ordner \texttt{keycerts} kopiert werden.
+
+\subsubsection*{Datenbank aufsetzen}
+
+\begin{verbatim}
+CREATE DATABASE IF NOT EXISTS ocspcrl;
+CREATE USER 'ocsp'@'%' IDENTIFIED BY 'htl';
+GRANT ALL PRIVILEGES ON ocspcrl.* TO 'ocsp'@'%';
+FLUSH PRIVILEGES;
+\end{verbatim}
+
+\subsubsection*{CRLs laden}
+
+\begin{verbatim}
+mkdir /opt/tomcat/xipki/crls/myca-crl
+cp ./ca.crl /opt/tomcat/xipki/crls/myca-crl/ca.crl
+cp ./intermediate-ca.crt /opt/tomcat/xipki/crls/myca-crl/ca.crt
+touch /opt/tomcat/xipki/crls/myca-crl/UPDATEME
+\end{verbatim}
+
+\subsubsection*{Starten und Testen}
+
+\begin{verbatim}
+./opt/tomcat/bin/startup.sh
+\end{verbatim}
+
+OpenSSL-Test:
+
+\begin{verbatim}
+openssl ocsp \
+ -issuer intermediate-ca.crt \
+ -cert server.crt \
+ -url http://localhost:8080/ocsp/ \
+ -text \
+ -CAfile root-ca.crt
+\end{verbatim}
+
+\subsubsection*{System Service}
+
+\begin{verbatim}
+sudo nano /etc/systemd/system/tomcat.service
+\end{verbatim}
+
+\begin{verbatim}
+[Unit]
+Description=Tomcat
+After=network.target
+
+[Service]
+Type=forking
+User=tomcat
+Group=tomcat
+
+Environment="JAVA_HOME=<java-install>"
+Environment="JAVA_OPTS=-Djava.security.egd=file:///dev/urandom"
+Environment="CATALINA_BASE=/opt/tomcat"
+Environment="CATALINA_HOME=/opt/tomcat"
+Environment="CATALINA_PID=/opt/tomcat/temp/tomcat.pid"
+
+ExecStart=/opt/tomcat/bin/startup.sh
+ExecStop=/opt/tomcat/bin/shutdown.sh
+
+RestartSec=10
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+\end{verbatim}
+
+\begin{verbatim}
+sudo systemctl start tomcat
+\end{verbatim}

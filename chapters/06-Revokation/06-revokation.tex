@@ -1,12 +1,21 @@
 \chapter{Certificate Revocation}
 
 \section{CRL – Certificate Revocation Lists}
+\input{chapters/06-Revokation/CRLallgemein/crl}
 
-\subsection{Erstellung und Veröffentlichung einer CRL mit XCA und Nginx}
+\subsection{Erstellung einer CRL unter Verwendung von XCA}
 \input{chapters/06-Revokation/CRL_XCA_nginx/crlxca.tex}
 
-\subsection{Erstellung und Veröffentlichung einer CRL mit OpenSSL und Nginx}
+\subsection{Erstellung einer CRL unter Verwendung von OpenSSL}
 \input{chapters/06-Revokation/CRL_XCA_nginx/crlossl}
+
+\subsection{Veröffentlichung einer CRL unter Verwendung von Nginx}
+\input{chapters/06-Revokation/CRL_XCA_nginx/CRLnginx}
+
+\subsection{Veröffentlichung einer CRL unter Verwendung von Apache}
+\input{chapters/06-Revokation/CRL_XCA_nginx/CRLapache}
+
+
 
 \subsection{Verhalten moderner Browser bei CRLs}
 
@@ -38,6 +47,26 @@ In realen Systemen zeigt sich jedoch, dass viele Browser die im Zertifikat hinte
 \newpage
 
 \section{OCSP – Online Certificate Status Protocol}
+\input{chapters/06-Revokation/OCSPallgemein/ocsp}
+\subsection{Aufsetzen eines OCSP-Responders}
+\input{chapters/06-Revokation/OCSPallgemein/responder}
+\subsection{Verhalten moderner Browser bei OCSP}
+\subsubsection{Mozilla Firefox}
+\input{chapters/06-Revokation/OCSP_im_Browser/OCSPFirefox.tex}
+\subsubsection{Google Chrome}
+\input{chapters/06-Revokation/OCSP_im_Browser/OCSPChrome.tex}
+\subsubsection{Microsoft Edge}
+\input{chapters/06-Revokation/OCSP_im_Browser/OCSPEdge.tex}
+\subsubsection{Apple Safari}
+\input{chapters/06-Revokation/OCSP_im_Browser/OCSPSafari.tex}
 
+\subsubsection{Mozilla Firefox}
+\input{chapters/06-Revokation/OCSP_im_Browser/OCSPFirefox.tex}
+\subsubsection{Google Chrome}
+\input{chapters/06-Revokation/OCSP_im_Browser/OCSPChrome.tex}
+\subsubsection{Microsoft Edge}
+\input{chapters/06-Revokation/OCSP_im_Browser/OCSPEdge.tex}
+\subsubsection{Apple Safari}
+\input{chapters/06-Revokation/OCSP_im_Browser/OCSPSafari.tex}
 
 

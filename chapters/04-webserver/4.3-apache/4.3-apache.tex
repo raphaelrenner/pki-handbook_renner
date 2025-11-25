@@ -5,100 +5,100 @@ Die Konfiguration auf Apache unterscheidet sich in einigen Punkten von der Konfi
 Um Apache auf einem Debian-basierten System zu installieren, verwenden Sie den folgenden Befehl:
 
 \begin{tcolorbox}[colback=black!3!white, colframe=black!60!white]
-    \begin{verbatim}
-        sudo apt install apache2
+\begin{verbatim}
+sudo apt install apache2
 \end{verbatim}
 \end{tcolorbox}
 
 Im nächsten Schritt sollen die Ports 80 (HTTP) und 443 (HTTPS) in der Firewall freigegeben werden und der Server gestartet werden:
 \begin{tcolorbox}[colback=black!3!white, colframe=black!60!white]
-    \begin{verbatim}
-        //Öffne Port 80 und 443
-        sudo ufw allow 'Apache Full'
-        //Starte Apache
-        sudo systemctl start apache2
-        sudo systemctl enable apache2
+\begin{verbatim}
+//Öffne Port 80 und 443
+sudo ufw allow 'Apache Full'
+//Starte Apache
+sudo systemctl start apache2
+sudo systemctl enable apache2
 \end{verbatim}
 \end{tcolorbox}
 
 Der Webserver sollte nun unter der IP-Adresse des Servers erreichbar sein. Auf jedenfall sollte der Webserver "Active (Running)" sein. 
 \begin{tcolorbox}[colback=black!3!white, colframe=black!60!white]
-    \begin{verbatim}
-        sudo systemctl status apache2
+\begin{verbatim}
+sudo systemctl status apache2
 \end{verbatim}
 \end{tcolorbox}
 
 \subsection{Einbinden der Zertifikate in Apache}
-Dieser Part unterscheidet sich nicht von Nginx. Auch hier müssen die Zertifikate aus XCA exportiert und auf dem Server gespeichert werden. Die Schritte dazu sind in Abschnitt \ref{sec:export-certificates} beschrieben.
+Dieser Part unterscheidet sich nicht von Nginx. Auch hier müssen die Zertifikate aus XCA exportiert und auf dem Server gespeichert werden. Die Schritte dazu sind in Abschnitt \ref{sec:export-der-zertifikate-und-schluessel} beschrieben.
 
 \subsection{Apache Konfiguration}
 Für die Einbettung in die Config von Apache kann nun die /etc/apache2/sites-available/000-default.conf bearbeitet werden oder eine neue Datei erstellt werden.
 \begin{tcolorbox}[colback=black!3!white, colframe=black!60!white]
-    \begin{verbatim}
-        sudo nano /etc/apache2/sites-available/000-default.conf
-        === Inhalt der Datei ===
-        <VirtualHost *:80>
-            ServerName mytestsite.test
-            DocumentRoot /var/www/<Ordner in dem die Seite liegt>
-            # Optional: Redirect auf HTTPS
-            Redirect permanent / https://mytestsite.test/
-        </VirtualHost>
+\begin{verbatim}
+sudo nano /etc/apache2/sites-available/000-default.conf
+    === Inhalt der Datei ===
+    <VirtualHost *:80>
+        ServerName mytestsite.test
+        DocumentRoot /var/www/<Ordner in dem die Seite liegt>
+        # Optional: Redirect auf HTTPS
+        Redirect permanent / https://mytestsite.test/
+    </VirtualHost>
 
 
-        <VirtualHost *:443>
-            ServerName mytestsite.test
-            DocumentRoot /var/www/<Ordner in dem die Seite liegt>
+    <VirtualHost *:443>
+        ServerName mytestsite.test
+        DocumentRoot /var/www/<Ordner in dem die Seite liegt>
 
 
-            SSLEngine on
-            SSLCertificateFile /etc/ssl/certs/fullchain.pem
-            SSLCertificateKeyFile /etc/ssl/private/server.pem
+        SSLEngine on
+        SSLCertificateFile /etc/ssl/certs/fullchain.pem
+        SSLCertificateKeyFile /etc/ssl/private/server.pem
 
 
-            # Sicherheits-/Protokoll-Einstellungen (modern)
-            SSLProtocol -all +TLSv1.2 +TLSv1.3
-            SSLCipherSuite HIGH:!aNULL:!MD5
-            SSLHonorCipherOrder on
+        # Sicherheits-/Protokoll-Einstellungen (modern)
+        SSLProtocol -all +TLSv1.2 +TLSv1.3
+        SSLCipherSuite HIGH:!aNULL:!MD5
+        SSLHonorCipherOrder on
 
 
-            <Directory /var/www/<Ordner in dem die Seite liegt>>
-                Options -Indexes +FollowSymLinks
-                AllowOverride All
-                Require all granted
-            </Directory>
+        <Directory /var/www/<Ordner in dem die Seite liegt>>
+            Options -Indexes +FollowSymLinks
+            AllowOverride All
+            Require all granted
+        </Directory>
 
 
-            ErrorLog ${APACHE_LOG_DIR}/mytestsite_error.log
-            CustomLog ${APACHE_LOG_DIR}/mytestsite_access.log combined
-        </VirtualHost>
+    ErrorLog ${APACHE_LOG_DIR}/mytestsite_error.log
+    CustomLog ${APACHE_LOG_DIR}/mytestsite_access.log combined
+ </VirtualHost>
 \end{verbatim}
 \end{tcolorbox}
 
 \pagebreak
 Module aktivieren und Site aktivieren:
 \begin{tcolorbox}[colback=black!3!white, colframe=black!60!white]
-    \begin{verbatim}
-    # SSL-Modul aktivieren
-    sudo a2enmod ssl
-    # Header-Modul falls HSTS verwendet werden soll
-    sudo a2enmod headers
+ \begin{verbatim}
+ # SSL-Modul aktivieren
+ sudo a2enmod ssl
+ # Header-Modul falls HSTS verwendet werden soll
+sudo a2enmod headers
 
 
-    # Site aktivieren
-    sudo a2ensite mytestsite.conf
+# Site aktivieren
+sudo a2ensite mytestsite.conf
 
 
-    # Falls die Standard-HTTP-Site nicht gebraucht wird:
-    # sudo a2dissite 000-default.conf
+# Falls die Standard-HTTP-Site nicht gebraucht wird:
+# sudo a2dissite 000-default.conf
 \end{verbatim}
 \end{tcolorbox}
 
 Konfiguration testen und Apache neustarten:
 \begin{tcolorbox}[colback=black!3!white, colframe=black!60!white]
-    \begin{verbatim}
-    # Konfiguration testen
-    sudo apache2ctl configtest
-    # Apache neustarten
-    sudo systemctl restart apache2
+\begin{verbatim}
+# Konfiguration testen
+sudo apache2ctl configtest
+# Apache neustarten
+sudo systemctl restart apache2
 \end{verbatim}
 \end{tcolorbox}

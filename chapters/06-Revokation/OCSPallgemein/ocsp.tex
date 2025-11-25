@@ -1,0 +1,14 @@
+\subsection*{Funktionsweise von OCSP}
+
+Ein \textbf{OCSP} (Online Certificate Status Protocol) ist ein Netzwerkprotokoll, welches verwendet wird, um den Status von digitalen Zertifikaten in Echtzeit zu überprüfen. Es dient hauptsächlich der Überprüfung, ob ein Zertifikat von einer Zertifizierungsstelle (CA) als gültig, widerrufen oder ungültig markiert wurde, ohne dass der gesamte Zertifikatstatus heruntergeladen werden muss. OCSP wird oft als eine Alternative zu CRLs (Certificate Revocation Lists) verwendet.
+
+\subsection*{Soll-Funktionsweise von OCSP}
+
+\begin{itemize}
+    \item \textbf{Zertifikatsanfrage:} Ein Client (z.\,B. ein Webbrowser) möchte die Gültigkeit eines Zertifikats prüfen. Anstatt eine vollständige Liste von widerrufenen Zertifikaten (CRL) herunterzuladen, sendet der Client eine Anfrage an einen OCSP-Responder (eine spezielle Stelle, die den Status des Zertifikats prüft).
+    \item \textbf{Anfrage an den OCSP-Responder:} Die Anfrage enthält Informationen über das Zertifikat, das überprüft werden soll, einschließlich der Seriennummer des Zertifikats. Diese Anfrage wird an den OCSP-Responder geschickt.
+    \item \textbf{Antwort des OCSP-Responders:} Der OCSP-Responder antwortet mit einer Statusmeldung, die anzeigt, ob das Zertifikat gültig, widerrufen oder unbekannt ist. Die Antwort enthält auch einen Zeitstempel, um sicherzustellen, dass die Antwort aktuell ist.
+    \item \textbf{Überprüfung der Antwort:} Der Client überprüft die Antwort des OCSP-Responders. Wenn der Status des Zertifikats als gültig bestätigt wird, kann der Client dem Zertifikat vertrauen. Bei einem widerrufenen oder unbekannten Status wird der Client das Zertifikat ablehnen.
+\end{itemize}
+
+Zusammenfassend lässt sich sagen, dass OCSP ein effizientes und praktisches Protokoll ist, um die Gültigkeit von Zertifikaten in Echtzeit zu überprüfen, und eine gute Alternative zu CRLs darstellt, wenn es funktioniert.

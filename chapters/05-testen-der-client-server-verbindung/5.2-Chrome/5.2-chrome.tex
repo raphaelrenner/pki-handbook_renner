@@ -1,1 +1,49 @@
 \section{Chrome}
+
+\subsection{Testumgebung}
+
+Als Client-System wird ein Windows~11-Rechner verwendet, auf dem die Verbindung zum Webserver hergestellt wird. 
+Die Server-VM basiert auf Ubuntu mit einem installierten Nginx-Webserver, der die zuvor erstellten Zertifikate nutzt.
+
+\begin{itemize}
+	\item \textbf{Server:} Ubuntu (Nginx, IP: 192.168.3.210)
+	\item \textbf{Client:} Windows 11 (Chrome)
+	\item \textbf{Protokoll:} HTTPS (Port 443)
+	\item \textbf{Zertifikate:}
+	\begin{itemize}
+		\item Root CA: \texttt{root\_CA.crt}
+		\item Intermediate CA: \texttt{intermediate\_CA.crt}
+		\item Server-Zertifikat: \texttt{server.crt}
+	\end{itemize}
+\end{itemize}
+
+\subsection{Import der Zertifikate}
+
+Damit der Client dem Server-Zertifikat vertraut, muss die Root-Zertifizierungsstelle (Root~CA) im Browser Chrome importiert werden.
+
+\begin{enumerate}
+	\item \textit{Einstellungen → Datenschutz und Sicherheit → Sicherheit → Erweitert → Zertifikate verwalten → Von dir installiert → Vertrauenswürdige Zertifikate importieren}
+	\item Root~CA und Intermediate~CA auswählen und importieren.
+\end{enumerate}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\linewidth]{import-into-Chrome.png}
+	\caption{Import Root CA into Chrome}
+	\label{fig:import-into-Chrome}
+\end{figure}
+
+\subsection{Verbindungstest}
+
+Nach erfolgreichem Import muss der Browser neu gestartet werden. Anschließend kann folgende URL aufgerufen werden:
+
+\begin{center}
+	\texttt{https://192.168.3.210}
+\end{center}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\linewidth]{successful-connection-Chrome.png}
+	\caption{Successful Connection in Chrome}
+	\label{fig:successful-connection-Chrome}
+\end{figure}
+Die Verbindung sollte nun als sicher angezeigt werden.

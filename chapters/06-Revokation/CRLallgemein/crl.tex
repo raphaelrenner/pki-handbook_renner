@@ -1,0 +1,13 @@
+\subsection*{Funktionsweise von CRL}
+
+Eine \textbf{CRL} (Certificate Revocation List) ist eine Liste, die von einer Zertifizierungsstelle (CA) veröffentlicht wird und alle Zertifikate enthält, die vor ihrem regulären Ablaufdatum widerrufen wurden. Eine CRL dient dazu festzustellen, ob ein Zertifikat noch gültig ist oder ob es aufgrund eines Widerrufs als ungültig betrachtet werden muss. CRLs werden besonders in Systemen eingesetzt, die keine Echtzeitüberprüfung wie OCSP benötigen oder unterstützen.
+
+\subsection*{Soll-Funktionsweise von CRL}
+
+\begin{itemize}
+    \item \textbf{Zertifikatsanfrage:} Ein Client (z.\,B. ein Webbrowser) möchte die Gültigkeit eines Zertifikats prüfen. Dazu lädt er eine aktuelle CRL von der Zertifizierungsstelle herunter, statt eine Echtzeitabfrage wie bei OCSP durchzuführen.
+    \item \textbf{Abgleich mit der CRL:} Die CRL enthält alle widerrufenen Zertifikate samt Seriennummern. Der Client prüft, ob die Seriennummer des zu überprüfenden Zertifikats in der CRL enthalten ist. Ist dies der Fall, gilt das Zertifikat als widerrufen und damit ungültig.
+    \item \textbf{Verwendung der CRL:} Der Client lädt die CRL regelmäßig neu herunter, um stets den aktuellen Widerrufsstatus zu kennen. Die CRL wird in festen Intervallen durch die CA aktualisiert und enthält alle Zertifikate, die in diesem Zeitraum widerrufen wurden.
+\end{itemize}
+
+Zusammenfassend lässt sich sagen, dass CRLs eine etablierte Methode zur Überprüfung des Widerrufsstatus von Zertifikaten darstellen. Allerdings kann der Download der gesamten Liste bei großen PKIs ineffizient sein. Dennoch bleibt die CRL ein weit verbreiteter und zuverlässiger Mechanismus, insbesondere in Umgebungen ohne Echtzeitprüfung.

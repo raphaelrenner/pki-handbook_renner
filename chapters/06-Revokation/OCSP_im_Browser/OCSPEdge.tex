@@ -1,0 +1,60 @@
+
+
+Microsoft Edge basiert auf der Chromium-Plattform und übernimmt daher weitgehend die gleichen Designentscheidungen wie Google Chrome. Dies betrifft insbesondere die Behandlung klassischer Widerrufsmechanismen in X.509-basierten Public-Key-Infrastrukturen. Obwohl in Zertifikaten über das AIA-Feld eindeutige OCSP-Responder-Informationen hinterlegt sind, nutzt Edge diese standardmäßig nicht. Statt direkter Widerrufsabfragen setzt Edge primär auf alternative, zentral gepflegte Widerrufssysteme.
+
+\subsubsection*{Verhalten von Microsoft Edge}
+
+Edge führt im Standardbetrieb keine OCSP-Onlineabfragen durch. Die im Zertifikat angegebenen OCSP-Responder werden ignoriert, selbst wenn sie korrekt erreichbar und performant sind. Microsoft verweist auf dieselben Gründe wie Google für dieses Verhalten:
+
+\begin{itemize}
+    \item \textbf{Performance}: Jede OCSP-Abfrage würde eine zusätzliche Netzwerkoperation erzeugen und den Seitenaufbau verzögern.
+    \item \textbf{Ausfallsicherheit}: Wenn ein OCSP-Responder nicht verfügbar ist, darf dies die Webseitenladung nicht blockieren.
+    \item \textbf{Datenschutz}: OCSP-Abfragen würden einem externen Server mitteilen, welche Webseiten ein Nutzer besucht.
+\end{itemize}
+
+Statt OCSP nutzt Edge – wie Chrome – vorrangig lokale, von Google bereitgestellte Listen kritischer Widerrufe (CRLSets). Diese enthalten jedoch nur wenige hochprioritäre Sperrungen und ersetzen keinen vollständigen Widerrufsmechanismus.
+
+\paragraph*{OCSP-Stapling}
+
+Edge unterstützt vollständig OCSP-Stapling. Dabei liefert der Webserver eine signierte OCSP-Antwort direkt im TLS-Handshake mit. Dieser Mechanismus wird vom Browser als vertrauenswürdig akzeptiert und ist:
+
+\begin{itemize}
+    \item schnell, da keine zusätzlichen Netzwerkabfragen nötig sind,
+    \item datenschutzfreundlich, da keine Nutzerinformationen an OCSP-Server gesendet werden,
+    \item unabhängig von der aktuellen Erreichbarkeit des OCSP-Responders.
+\end{itemize}
+
+OCSP-Stapling ist damit der einzige OCSP-basierte Widerrufsmechanismus, der im Standardverhalten von Edge ohne Einschränkungen genutzt wird.
+
+\subsubsection*{Richtlinienbasierte Aktivierung von OCSP}
+
+Edge bietet Unternehmen die Möglichkeit, klassische OCSP-Abfragen über Gruppenrichtlinien wieder zu aktivieren. Diese Funktion ist jedoch bewusst standardmäßig deaktiviert.
+
+\paragraph*{Relevante Richtlinien}
+
+\begin{itemize}
+    \item \texttt{EnableOnlineRevocationChecks} – aktiviert klassische Widerrufsprüfungen über CRL und OCSP.
+    \item \texttt{RequireOnlineRevocationChecksForLocalAnchors} – erzwingt CRL-/OCSP-Abfragen für Zertifikate, die von internen CAs ausgestellt wurden.
+\end{itemize}
+
+Erst wenn diese Richtlinien gesetzt sind, führt Edge wieder tatsächliche OCSP-Abfragen an den im Zertifikat hinterlegten Responder durch.
+
+\subsubsection*{Problemstellung: Private CA und Widerruf in Edge}
+
+Für interne PKI-Umgebungen – wie in unserem Laboraufbau – ergeben sich aus dem Standardverhalten mehrere Probleme:
+
+\subparagraph*{Edge nutzt den OCSP-Responder nicht}
+Selbst wenn ein korrekt konfigurierter OCSP-Responder im AIA-Feld angegeben ist, stellt Edge ohne Richtlinien keinerlei Abfragen.
+
+\subparagraph*{CRLSets ignorieren interne Zertifikate}
+Da CRLSets nur öffentliche Zertifizierungsstellen berücksichtigen, werden Zertifikate aus privaten CAs grundsätzlich nicht betrachtet.
+
+\subparagraph*{Kein Widerrufsnachweis ohne Richtlinien}
+Ein widerrufenes Zertifikat wird von Edge weiterhin als gültig akzeptiert, wenn:
+\begin{itemize}
+    \item keine Onlineprüfungen aktiviert wurden,
+    \item die PKI auf interne Komponenten beschränkt ist,
+    \item kein OCSP-Stapling verwendet wird.
+\end{itemize}
+
+Damit gilt: Ohne eine bewusst gesetzte Unternehmensrichtlinie oder OCSP-Stapling bleibt der Widerruf interner Zertifikate für Edge unsichtbar.
