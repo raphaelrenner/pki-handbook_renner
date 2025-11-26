@@ -1,0 +1,49 @@
+
+Mozilla Firefox nutzt standardmäßig kein OCSP mehr für das checken von widerrufenen Zertifikaten, weil es den sogenannten OpenSSl heartbeat bug gab.  
+
+\subsubsection*{OneCRL}
+Anstelle des klassischen OCSP verwendet Mozilla Firefox eine zentralisierte Liste mit widerrufenen Zertifikaten namens OneCRL. Die Liste wird bei jedem Browserupdate aktualisiert und die neuen, von CAs widerrufenen Zertifikate hinzugefügt. 
+Vorteile von OneCRL:
+
+\begin{itemize}
+	\item \textbf{Zentralisierte Liste}
+	\item \textbf{Performance und Schnelligkeit}
+	\item \textbf{Automatisch Aktualisierung durch Update}
+\end{itemize}
+
+Für ein besseres Verständnis kann die OneCRL-List per JSON heruntergeladen oder als Web Page unter \texttt{https://crt.sh/mozilla-onecrl} angesehen werden.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\linewidth]{onecrl-firefox.png}
+	\caption{OneCRL in Mozilla Firefox}
+	\label{fig:screenshot20}
+\end{figure}
+
+\subsubsection*{OCSP-Stapling}
+Dennoch kann ihm Mozilla Firefox Browser OCSP-Stapling, also sogenannte Life Querys erzwungen werden. Falls diese jedoch fehlschlagen wird auf die lokale OneCRLListe
+zurückgegriffen. Diese Verhalten wird als \textbf{soft-fail} bezeichnet, da nicht
+sofort blockiert wird.
+Um diese OCSP Checks zu aktivieren muss zu \texttt{about:config security.OCSP.require} navigiert
+und \texttt{true} gesetzt werden. Danach kommt bei nicht vorhandener korrekten OCSP-Antwort ein Fehler/Error zurück und die Verbindung ist nicht sicher. 
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\linewidth]{ocsp-require-firefox.png}
+	\caption{Aktivieren von OCSP require}
+	\label{fig:screenshot20}
+\end{figure}
+
+\paragraph*{Quellen}
+
+\begin{itemize}
+	\item SSL.com Support Team (2021). How Do Browsers Handl Revoked SSL/TLS Certificates? \\
+	\url{https://www.ssl.com/blogs/how-do-browsers-handle-revoked-ssl-tls-certificates/}
+	
+	\item Steve Gibson (2014). \textit{Security Certificate Revocation Awareness
+	The case for “OCSP Must-Staple”} \\
+	\url{https://www.grc.com/revocation/ocsp-must-staple.htm}
+	
+	\item wiki.mozilla.org (2024). \textit{CA/History of Revocation Checking} \\
+	\url{https://wiki.mozilla.org/CA/History_of_Revocation_Checking}
+\end{itemize}
